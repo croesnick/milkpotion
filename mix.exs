@@ -23,14 +23,15 @@ defmodule Milkpotion.Mixfile do
   defp deps do
     [{:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
-     {:poison, "~> 2.0"}]
+     {:poison, "~> 2.0"},
+     {:httpoison, "~> 0.8"}]
   end
 
   # Configuration for the OTP application
   #
   # Type "mix help compile.app" for more information
   def application do
-    [ applications: [:logger],
+    [ applications: [:logger, :httpoison],
       env: [ api_key: "",
              shared_secret: "" ]
     ]

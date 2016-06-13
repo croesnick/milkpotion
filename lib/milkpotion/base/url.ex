@@ -3,17 +3,17 @@ defmodule Milkpotion.Base.Url do
   @rest_service "https://api.rememberthemilk.com/services/rest/"
 
   @doc """
-  Acquires data by calling the provided `method`.
+  Builds the request url defined by `method`.
   Any `params` will be attached to the request as query parameters.
 
   Returns a complete rest call uri.
 
   ## Examples
 
-     iex> Url.request "rtm.test.echo", %{"ping" => "pong"}
+     iex> Url.build "rtm.test.echo", %{"ping" => "pong"}
      "https://api.rememberthemilk.com/services/rest/?method=rtm.test.echo&api_key=<your_key>&ping=pong&api_sig=<sig>"
   """
-  def request(method, auth_token, params \\ %{}) do
+  def build(method, auth_token, params \\ %{}) do
     params
     |> Map.merge( build_required_params(method, auth_token) )
     |> add_sign_param
@@ -33,7 +33,7 @@ defmodule Milkpotion.Base.Url do
     |> add_params_to_uri(@auth_service)
   end
 
-  def auth_token_url(frob), do: %{"frob" => frob} |> (&request("rtm.auth.getToken", &1)).()
+  def auth_token_url(frob), do: %{"frob" => frob} |> (&build("rtm.auth.getToken", &1)).()
 
   ### internal api ###
 
