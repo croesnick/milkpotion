@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/croesnick/milkpotion.svg?branch=master)](https://travis-ci.org/croesnick/milkpotion)
+
 # Milkpotion
 
 _milkpotion_ is an api wrapper for [Remember the Milk](https://www.rememberthemilk.com) written in Elixir.
