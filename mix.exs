@@ -24,16 +24,19 @@ defmodule Milkpotion.Mixfile do
     [{:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
      {:poison, "~> 2.0"},
-     {:httpoison, "~> 0.8"}]
+     {:httpoison, "~> 0.8"},
+     {:ex_rated, "~> 1.2"}]
   end
 
   # Configuration for the OTP application
   #
   # Type "mix help compile.app" for more information
   def application do
-    [ applications: [:logger, :httpoison],
+    [ applications: [:logger, :httpoison, :ex_rated],
       env: [ api_key: "",
-             shared_secret: "" ]
+             shared_secret: "",
+             rtm_rate_limit_rps: 1,
+             rtm_rate_limit_max_tries: 10 ]
     ]
   end
 end
