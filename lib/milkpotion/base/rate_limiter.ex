@@ -8,7 +8,7 @@ defmodule Milkpotion.Base.RateLimiter do
     case ExRated.check_rate(@bucket, 1_000, @rps) do
       {:ok, _} ->
         case HTTPoison.get(url) do
-          %HTTPoison.Response{status_code: 503} ->
+          {:ok, %HTTPoison.Response{status_code: 503}} ->
             error(url)
           response ->
             response
