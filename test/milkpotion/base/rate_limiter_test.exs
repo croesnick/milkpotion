@@ -16,6 +16,27 @@ defmodule Milkpotion.Base.RateLimiterTest do
     assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
   end
 
+  test "when only the first few calls are over rate limit" do
+    uri = "http://api.example.com"
+    max_tries = Application.get_env(:milkpotion, :rtm_rate_limit_max_tries)
+
+    {:ok, store} = Agent.start_link fn -> 0 end
+
+    fun = fn(:get, ^uri, _, _, _) ->
+      if Agent.get(store, fn state -> state end) < max_tries - 1 do
+        :ok = Agent.update(store, fn state -> state + 1 end)
+        {:ok, 503, ""}
+      else
+        {:ok, 200, ""}
+      end
+    end
+
+    :meck.expect(:hackney, :request, fun)
+    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
+
+    Agent.stop(store)
+  end
+
   test "when the client is constantly over rate limit" do
     uri = "http://api.example.com"
 

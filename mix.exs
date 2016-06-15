@@ -32,6 +32,11 @@ defmodule Milkpotion.Mixfile do
   end
 
   def application do
-    [ applications: [:logger, :httpoison, :ex_rated] ]
+    [ applications: [:logger, :httpoison, :ex_rated],
+      env: [ api_key: nil,
+             shared_secret: nil,
+             rtm_rate_limit_rps: 1,
+             rtm_rate_limit_max_tries: 5 ]
+    ]
   end
 end

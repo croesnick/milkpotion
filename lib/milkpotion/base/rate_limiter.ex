@@ -9,14 +9,18 @@ defmodule Milkpotion.Base.RateLimiter do
       {:ok, _} ->
         case HTTPoison.get(url) do
           {:ok, %HTTPoison.Response{status_code: 503}} ->
-            error(url)
+            retry(url, tries)
           response ->
             response
         end
       {:error, _} ->
-        :timer.sleep(1_000)
-        run(url, tries + 1)
+        retry(url, tries)
     end
+  end
+
+  defp retry(url, tries) do
+    :timer.sleep(1_000)
+    run(url, tries + 1)
   end
 
   defp error(url) do
