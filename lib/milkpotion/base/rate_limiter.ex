@@ -4,24 +4,44 @@ defmodule Milkpotion.Base.RateLimiter do
   @max_tries Application.get_env(:milkpotion, :max_retries_if_over_rate)
   @bucket Application.get_env(:milkpotion, :api_key)
 
-  def run(url, tries) when tries >= @max_tries, do: error(url)
-  def run(url, tries \\ 0) do
+  def run(method, url, body \\ "", headers \\ %{}, tries \\ 0)
+
+  def run(method, url, body, headers, tries) when tries >= @max_tries, do: error(url)
+  def run(method, url, body, headers, tries) do
     case ExRated.check_rate(@bucket, @interval, @rpi) do
       {:ok, _} ->
-        case HTTPoison.get(url) do
-          {:ok, %HTTPoison.Response{status_code: 503}} ->
-            retry(url, tries)
-          response ->
-            response
-        end
+        perform_call(method, url, body, headers, tries)
       {:error, _} ->
-        retry(url, tries)
+        retry(method, url, body, headers, tries)
     end
   end
 
-  defp retry(url, tries) do
+  defp perform_call(:get, url, body, headers, tries) do
+    case HTTPoison.get(url, headers) do
+      {:ok, %HTTPoison.Response{status_code: 503}} ->
+        retry(:get, url, body, headers, tries)
+      response ->
+        response
+    end
+  end
+
+  defp perform_call(:post, url, body, headers, tries) do
+    headers =
+      %{'Content-Type' => 'application/json'}
+      |> Map.merge(headers)
+      |> Enum.into([])
+
+    case HTTPoison.post(url, body, headers) do
+      {:ok, %HTTPoison.Response{status_code: 503}} ->
+        retry(:post, url, body, headers, tries)
+      response ->
+        response
+    end
+  end
+
+  defp retry(method, url, body, headers, tries) do
     :timer.sleep(@interval)
-    run(url, tries + 1)
+    run(method, url, body, headers, tries + 1)
   end
 
   defp error(url) do

@@ -1,10 +1,9 @@
 defmodule Milkpotion.Request do
   require Logger
-
   alias Milkpotion.Base.RateLimiter
 
-  def get(url) do
-    with {:ok, response} <- RateLimiter.run(url),
+  def get(url, headers \\ %{}) do
+    with {:ok, response} <- RateLimiter.run(:get, url, "", headers),
          {:ok, body}     <- parse_http_response(response),
          {:ok, _} = rtm  <- parse_rtm_response(body), do: rtm
   end

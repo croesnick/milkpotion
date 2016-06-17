@@ -16,7 +16,7 @@ defmodule Milkpotion.Base.RateLimiterTest do
   end
 
   test "when the tries as exceeded for the api key", %{uri: uri} do
-    assert {:error, :rtm, _} = RateLimiter.run(uri, @max_tries)
+    assert {:error, :rtm, _} = RateLimiter.run(:get, uri, "", %{}, @max_tries)
   end
 
   test "when the call succeeds", %{bypass: bypass, uri: uri} do
@@ -25,7 +25,7 @@ defmodule Milkpotion.Base.RateLimiterTest do
       assert "GET" == conn.method
       Plug.Conn.resp(conn, 200, ~s<{}>)
     end
-    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
+    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(:get, uri)
   end
 
   test "when only the first few calls cause the service to respond with a 503", %{bypass: bypass, uri: uri} do
@@ -43,7 +43,7 @@ defmodule Milkpotion.Base.RateLimiterTest do
       end
     end
 
-    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
+    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(:get, uri)
 
     Agent.stop(store)
   end
@@ -59,7 +59,7 @@ defmodule Milkpotion.Base.RateLimiterTest do
     end
 
     {:ok, _} = ExRated.check_rate(@bucket, interval, rpi)
-    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
+    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(:get, uri)
   end
 
   test "when the client is constantly over rate limit", %{bypass: bypass, uri: uri} do
@@ -68,6 +68,6 @@ defmodule Milkpotion.Base.RateLimiterTest do
       assert "GET" == conn.method
       Plug.Conn.resp(conn, 503, ~s<{}>)
     end
-    assert {:error, :rtm, _} = RateLimiter.run(uri)
+    assert {:error, :rtm, _} = RateLimiter.run(:get, uri)
   end
 end

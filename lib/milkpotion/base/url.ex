@@ -10,8 +10,8 @@ defmodule Milkpotion.Base.Url do
 
   ## Examples
 
-     iex> Url.build "rtm.test.echo", %{"ping" => "pong"}
-     "https://api.rememberthemilk.com/services/rest/?method=rtm.test.echo&api_key=<your_key>&ping=pong&api_sig=<sig>"
+      iex> Url.build "rtm.test.echo", %{"ping" => "pong"}
+      "https://api.rememberthemilk.com/services/rest/?method=rtm.test.echo&api_key=<your_key>&ping=pong&api_sig=<sig>"
   """
   def build(method, auth_token, params \\ %{}) do
     params
