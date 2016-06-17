@@ -1,46 +1,73 @@
 defmodule Milkpotion.Base.RateLimiterTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias Milkpotion.Base.RateLimiter
 
-  test "when the tries as exceeded for the api key" do
-    uri = "http://api.example.com"
-    max_tries = Application.get_env(:milkpotion, :rtm_rate_limit_max_tries)
+  @max_tries Application.get_env(:milkpotion, :max_retries_if_over_rate)
+  @bucket Application.get_env(:milkpotion, :api_key)
 
-    assert {:error, :rtm, _} = RateLimiter.run(uri, max_tries)
+  setup do
+    bypass = Bypass.open
+    uri = "http://localhost:#{bypass.port}"
+
+    # Delete the rate limiter bucket after every test
+    on_exit fn -> ExRated.delete_bucket(@bucket) end
+
+    {:ok, bypass: bypass, uri: uri}
   end
 
-  test "when the call succeeds" do
-    uri = "http://api.example.com"
+  test "when the tries as exceeded for the api key", %{uri: uri} do
+    assert {:error, :rtm, _} = RateLimiter.run(uri, @max_tries)
+  end
 
-    :meck.expect(:hackney, :request, fn(:get, ^uri, _, _, _) -> {:ok, 200, ""} end)
+  test "when the call succeeds", %{bypass: bypass, uri: uri} do
+    Bypass.expect bypass, fn conn ->
+      assert "/" == conn.request_path
+      assert "GET" == conn.method
+      Plug.Conn.resp(conn, 200, ~s<{}>)
+    end
     assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
   end
 
-  test "when only the first few calls are over rate limit" do
-    uri = "http://api.example.com"
-    max_tries = Application.get_env(:milkpotion, :rtm_rate_limit_max_tries)
-
+  test "when only the first few calls cause the service to respond with a 503", %{bypass: bypass, uri: uri} do
     {:ok, store} = Agent.start_link fn -> 0 end
 
-    fun = fn(:get, ^uri, _, _, _) ->
-      if Agent.get(store, fn state -> state end) < max_tries - 1 do
+    Bypass.expect bypass, fn conn ->
+      assert "/" == conn.request_path
+      assert "GET" == conn.method
+
+      if Agent.get(store, fn state -> state end) < @max_tries - 1 do
         :ok = Agent.update(store, fn state -> state + 1 end)
-        {:ok, 503, ""}
+        Plug.Conn.resp(conn, 503, ~s<{}>)
       else
-        {:ok, 200, ""}
+        Plug.Conn.resp(conn, 200, ~s<{}>)
       end
     end
 
-    :meck.expect(:hackney, :request, fun)
     assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
 
     Agent.stop(store)
   end
 
-  test "when the client is constantly over rate limit" do
-    uri = "http://api.example.com"
+  test "when only the first few calls are over rate limit", %{bypass: bypass, uri: uri} do
+    rpi = Application.get_env(:milkpotion, :max_requests_per_interval)
+    interval = Application.get_env(:milkpotion, :rate_limit_interval)
 
-    :meck.expect(:hackney, :request, fn(:get, ^uri, _, _, _) -> {:ok, 503, ""} end)
+    Bypass.expect bypass, fn conn ->
+      assert "/" == conn.request_path
+      assert "GET" == conn.method
+      Plug.Conn.resp(conn, 200, ~s<{}>)
+    end
+
+    {:ok, _} = ExRated.check_rate(@bucket, interval, rpi)
+    assert {:ok, %HTTPoison.Response{status_code: 200}} = RateLimiter.run(uri)
+  end
+
+  test "when the client is constantly over rate limit", %{bypass: bypass, uri: uri} do
+    Bypass.expect bypass, fn conn ->
+      assert "/" == conn.request_path
+      assert "GET" == conn.method
+      Plug.Conn.resp(conn, 503, ~s<{}>)
+    end
     assert {:error, :rtm, _} = RateLimiter.run(uri)
   end
 end

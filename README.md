@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/croesnick/milkpotion.svg?branch=master)](https://travis-ci.org/croesnick/milkpotion)
+[![Build Status](https://travis-ci.org/croesnick/milkpotion.svg?branch=master)](https://travis-ci.org/croesnick/milkpotion) [![Coverage Status](https://coveralls.io/repos/github/croesnick/milkpotion/badge.svg?branch=master)](https://coveralls.io/github/croesnick/milkpotion?branch=master)
 
 # Milkpotion
 

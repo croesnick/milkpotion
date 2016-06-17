@@ -5,5 +5,8 @@ otp_release:
   - 18.2
 before_script:
   - mix deps.get --only test
+env:
+  - MIX_ENV=test
 script:
   - mix test
+  - mix coveralls.travis
