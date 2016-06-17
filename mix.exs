@@ -32,7 +32,6 @@ defmodule Milkpotion.Mixfile do
      {:poison, "~> 2.0"},
      {:httpoison, "~> 0.8"},
      {:ex_rated, "~> 1.2"},
-     {:meck, "~> 0.8", only: :test},
      {:excoveralls, "~> 0.5", only: :test},
      {:bypass, "~> 0.1", only: :test}
    ]
