@@ -1,41 +1,53 @@
 defmodule Milkpotion.Base.Url do
-  @auth_service "https://www.rememberthemilk.com/services/auth/"
-  @rest_service "https://api.rememberthemilk.com/services/rest/"
+  @auth_service Application.get_env(:milkpotion, :auth_endpoint)
+  @rest_service Application.get_env(:milkpotion, :rest_endpoint)
 
   @doc """
-  Builds the request url defined by `method`.
-  Any `params` will be attached to the request as query parameters.
+  Builds the request url for calling the rest endpoint with the defined
+  `method`. Any `params` will be attached to the request as query
+  parameters.
 
   Returns a complete rest call uri.
 
   ## Examples
 
-      iex> Url.build "rtm.test.echo", %{"ping" => "pong"}
-      "https://api.rememberthemilk.com/services/rest/?method=rtm.test.echo&api_key=<your_key>&ping=pong&api_sig=<sig>"
+      iex> Url.rest "rtm.test.echo", "sample_token", %{"ping" => "pong"}
+      "https://api.rememberthemilk.com/services/rest/?method=rtm.test.echo&api_key=<your_key>&auth_token=sample_token&ping=pong&api_sig=<sig>"
   """
-  def build(method, auth_token, params \\ %{}) do
+  def rest(method, auth_token, params \\ %{}) do
     params
     |> Map.merge( build_required_params(method, auth_token) )
     |> add_sign_param
     |> add_params_to_uri(@rest_service)
   end
 
-  defp build_required_params(method, auth_token) do
-    %{"format"     => "json",
-      "method"     => method,
-      "api_key"    => Milkpotion.api_key,
-      "auth_token" => auth_token }
+  def auth(method, params \\ %{}) do
+    params
+    |> Map.merge( build_required_params(method, nil) )
+    |> add_sign_param
+    |> add_params_to_uri(@auth_service)
   end
 
-  def auth_url(permissions) when permissions in ~w(read write delete) do
+  def init_auth(permissions) when permissions in ~w(read write delete) do
     %{"api_key" => Milkpotion.api_key, "perms" => permissions}
     |> add_sign_param
     |> add_params_to_uri(@auth_service)
   end
 
-  def auth_token_url(frob), do: %{"frob" => frob} |> (&build("rtm.auth.getToken", &1)).()
-
   ### internal api ###
+
+  defp build_required_params(method, nil) do
+    %{"format"  => "json",
+      "method"  => method,
+      "api_key" => Milkpotion.api_key}
+  end
+
+  defp build_required_params(method, auth_token) do
+    %{"format"     => "json",
+      "method"     => method,
+      "api_key"    => Milkpotion.api_key,
+      "auth_token" => auth_token}
+  end
 
   defp add_sign_param(params) do
     Map.put params, "api_sig", api_sig(params)

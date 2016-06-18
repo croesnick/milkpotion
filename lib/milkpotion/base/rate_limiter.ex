@@ -6,7 +6,7 @@ defmodule Milkpotion.Base.RateLimiter do
 
   def run(method, url, body \\ "", headers \\ %{}, tries \\ 0)
 
-  def run(method, url, body, headers, tries) when tries >= @max_tries, do: error(url)
+  def run(_method, url, _body, _headers, tries) when tries >= @max_tries, do: error(url)
   def run(method, url, body, headers, tries) do
     case ExRated.check_rate(@bucket, @interval, @rpi) do
       {:ok, _} ->

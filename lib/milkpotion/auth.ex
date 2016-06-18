@@ -2,7 +2,11 @@ defmodule Milkpotion.Auth do
   alias Milkpotion.Base.Url
   alias Milkpotion.Request
 
-  def auth_token(frob) do
-    frob |> Url.auth_token_url |> Request.get
+  def get_token(frob) do
+    Url.rest("rtm.auth.getToken", nil, %{"frob" => frob}) |> Request.get
+  end
+
+  def check_token(token) do
+    Url.rest("rtm.auth.checkToken", token) |> Request.get
   end
 end

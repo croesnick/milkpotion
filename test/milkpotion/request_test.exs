@@ -6,17 +6,17 @@ defmodule Milkpotion.RequestTest do
 
   test "#parse_http_response with 200er response" do
     response = %HTTPoison.Response{status_code: 200, body: "[]"}
-    assert {:ok, "[]"} == Request.parse_http_response({:ok, response})
+    assert {:ok, "[]"} == Request.parse_http_response(response)
   end
 
   test "#parse_http_response with non-200er response" do
     response = %HTTPoison.Response{status_code: 400, body: "[]"}
-    assert {:error, :http, _} = Request.parse_http_response({:ok, response})
+    assert {:error, :http, _} = Request.parse_http_response(response)
   end
 
   test "#parse_http_response with failed request" do
     response = %HTTPoison.Error{reason: "bad request"}
-    assert {:error, :http, "bad request"} == Request.parse_http_response({:error, response})
+    assert {:error, :http, "bad request"} == Request.parse_http_response(response)
   end
 
   test "#parse_rtm_response with valid data" do

@@ -3,7 +3,7 @@ defmodule Milkpotion.Mixfile do
 
   def project do
     [app: :milkpotion,
-     version: "0.0.2",
+     version: "0.0.3",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -41,6 +41,8 @@ defmodule Milkpotion.Mixfile do
     [ applications: [:logger, :httpoison, :ex_rated],
       env: [ api_key: nil,
              shared_secret: nil,
+             rest_endpoint: "https://www.rememberthemilk.com/services/rest/",
+             auth_endpoint: "https://www.rememberthemilk.com/services/auth/",
              rate_limit_interval: 1_000,
              max_requests_per_interval: 1,
              max_retries_if_over_rate: 5 ]

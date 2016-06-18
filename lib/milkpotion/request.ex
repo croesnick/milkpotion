@@ -3,23 +3,23 @@ defmodule Milkpotion.Request do
   alias Milkpotion.Base.RateLimiter
 
   def get(url, headers \\ %{}) do
-    with {:ok, response} <- RateLimiter.run(:get, url, "", headers),
-         {:ok, body}     <- parse_http_response(response),
-         {:ok, _} = rtm  <- parse_rtm_response(body), do: rtm
+    with {_, response}  <- RateLimiter.run(:get, url, "", headers),
+         {:ok, body}    <- parse_http_response(response),
+         {:ok, _} = rtm <- parse_rtm_response(body), do: rtm
   end
 
-  def parse_http_response({:ok, %HTTPoison.Response{status_code: 200, body: body}}) do
+  def parse_http_response(%HTTPoison.Response{status_code: 200, body: body}) do
     {:ok, body}
   end
 
-  def parse_http_response({:ok, %HTTPoison.Response{status_code: code}}) do
+  def parse_http_response(%HTTPoison.Response{status_code: code}) do
     error_message = "Unexpected: RTM service responded with #{code}."
     Logger.error error_message
 
     {:error, :http, error_message}
   end
 
-  def parse_http_response({:error, %HTTPoison.Error{reason: reason}}) do
+  def parse_http_response(%HTTPoison.Error{reason: reason}) do
     Logger.info "Could not fetch data. Reason: #{reason}"
     {:error, :http, reason}
   end
