@@ -38,6 +38,6 @@ defmodule Milkpotion.RequestTest do
   test "#parse_rtm_response with stat = fail" do
     error = %{"code" => 123, "msg" => "forbidden"}
     json  = Poison.encode! %{"rsp" => %{"stat" => "fail", "err" => error}}
-    assert {:error, :request, "[Err:123] forbidden"} == Request.parse_rtm_response(json)
+    assert {:error, :request, %{code: 123, message: "forbidden"}} == Request.parse_rtm_response(json)
   end
 end

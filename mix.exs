@@ -15,7 +15,11 @@ defmodule Milkpotion.Mixfile do
                          "coveralls.post": :test,
                          "coveralls.html": :test],
      package: package,
-     deps: deps
+     deps: deps,
+     dialyzer: [
+       plt_apps: [:erts, :kernel, :stdlib],
+       flags: ["-Wunmatched_returns","-Werror_handling","-Wrace_conditions", "-Wno_opaque"]
+     ]
    ]
   end
 
@@ -29,6 +33,7 @@ defmodule Milkpotion.Mixfile do
   defp deps do
     [{:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
+     {:dialyxir, "~> 0.3", only: :dev},
      {:poison, "~> 2.0"},
      {:httpoison, "~> 0.8"},
      {:ex_rated, "~> 1.2"},

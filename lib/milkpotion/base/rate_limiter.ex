@@ -6,7 +6,10 @@ defmodule Milkpotion.Base.RateLimiter do
 
   def run(method, url, body \\ "", headers \\ %{}, tries \\ 0)
 
+  @spec run(atom, binary, binary, map, non_neg_integer) :: {:error, :rtm, binary}
   def run(_method, url, _body, _headers, tries) when tries >= @max_tries, do: error(url)
+
+  @spec run(atom, binary, binary, map, non_neg_integer) :: {:ok, map} | {:error, :rtm, binary}
   def run(method, url, body, headers, tries) do
     case ExRated.check_rate(@bucket, @interval, @rpi) do
       {:ok, _} ->
@@ -16,6 +19,7 @@ defmodule Milkpotion.Base.RateLimiter do
     end
   end
 
+  @spec perform_call(atom, binary, binary, map, non_neg_integer) :: {:ok, map} | {:error, :rtm, binary}
   defp perform_call(:get, url, body, headers, tries) do
     case HTTPoison.get(url, headers) do
       {:ok, %HTTPoison.Response{status_code: 503}} ->
@@ -25,6 +29,7 @@ defmodule Milkpotion.Base.RateLimiter do
     end
   end
 
+  @spec perform_call(atom, binary, binary, map, non_neg_integer) :: {:ok, map} | {:error, :rtm, binary}
   defp perform_call(:post, url, body, headers, tries) do
     headers =
       %{'Content-Type' => 'application/json'}
@@ -39,11 +44,13 @@ defmodule Milkpotion.Base.RateLimiter do
     end
   end
 
+  @spec retry(atom, binary, binary, map, non_neg_integer) :: {:ok, map} | {:error, :rtm, binary}
   defp retry(method, url, body, headers, tries) do
     :timer.sleep(@interval)
     run(method, url, body, headers, tries + 1)
   end
 
+  @spec error(binary) :: {:error, :rtm, binary}
   defp error(url) do
     {:error, :rtm, "Could not call #{url}: Constantly over rate limit."}
   end
