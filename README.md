@@ -9,7 +9,7 @@ _milkpotion_ is an api wrapper for [Remember the Milk](https://www.rememberthemi
 Add _milkpotion_ to your list of dependencies in `mix.exs`:
 
     def deps do
-      [{:milkpotion, "~> 0.0.3"}]
+      [{:milkpotion, "~> 0.0.4"}]
     end
 
 ## Configuration
