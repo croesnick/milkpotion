@@ -9,21 +9,6 @@ defmodule Milkpotion.Base.UrlTest do
     |> URI.decode_query
   end
 
-  test "auth/1" do
-    uri = Url.auth("test.method")
-    assert %{"method"  => "test.method",
-             "api_key" => _,
-             "api_sig" => _} = query_dict_from_uri(uri)
-  end
-
-  test "auth/2" do
-    uri = Url.auth("test.method", %{"key" => "value"})
-    assert %{"method"  => "test.method",
-             "key"     => "value",
-             "api_key" => _,
-             "api_sig" => _} = query_dict_from_uri(uri)
-  end
-
   test "rest/2" do
     uri = Url.rest("test.method", "sample_token")
     assert %{"method"     => "test.method",

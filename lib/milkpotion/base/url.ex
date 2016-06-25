@@ -1,9 +1,14 @@
 defmodule Milkpotion.Base.Url do
+  @moduledoc """
+  This module contains url builder functions. These are mainly thought for
+  internal use.
+  """
+
   @auth_service Application.get_env(:milkpotion, :auth_endpoint)
   @rest_service Application.get_env(:milkpotion, :rest_endpoint)
 
   @doc """
-  Builds the request url for calling the rest endpoint with the defined
+  Builds the request url for calling RTM's /rest endopoint with the given
   `method`. Any `params` will be attached to the request as query
   parameters.
 
@@ -11,7 +16,7 @@ defmodule Milkpotion.Base.Url do
 
   ## Examples
 
-      iex> Url.rest "rtm.test.echo", "sample_token", %{"ping" => "pong"}
+      iex> Milkpotiom.Base.Url.rest "rtm.test.echo", "sample_token", %{"ping" => "pong"}
       "https://api.rememberthemilk.com/services/rest/?method=rtm.test.echo&api_key=<your_key>&auth_token=sample_token&ping=pong&api_sig=<sig>"
   """
   @spec rest(binary, nil | binary, map) :: binary
@@ -22,14 +27,16 @@ defmodule Milkpotion.Base.Url do
     |> add_params_to_uri(@rest_service)
   end
 
-  @spec auth(binary, map) :: binary
-  def auth(method, params \\ %{}) do
-    params
-    |> Map.merge( build_required_params(method, nil) )
-    |> add_sign_param
-    |> add_params_to_uri(@auth_service)
-  end
+  @doc """
+  Builds an auth using your api key with the given `permisions`.
 
+  Returns a complete rest call uri.
+
+  ## Examples
+
+      iex> Milkpotion.Url.init_auth "read"
+      "https://www.rememberthemilk.com/services/auth/?api_key=<your_key>&api_sig=<sig>&perms=read"
+  """
   @spec init_auth(binary) :: binary
   def init_auth(permissions) when permissions in ~w(read write delete) do
     %{"api_key" => Milkpotion.api_key, "perms" => permissions}

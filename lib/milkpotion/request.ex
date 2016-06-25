@@ -1,7 +1,23 @@
 defmodule Milkpotion.Request do
+  @moduledoc """
+  This module is the main entry point for issuing requests to the
+  _Remember the Milk_ service. It rate-limits any request (if necessary)
+  and also ensures a proper error handling.
+  """
   require Logger
   alias Milkpotion.Base.RateLimiter
 
+  @doc """
+  Issues a GET request to the given `url` with the provided http `headers`.
+
+  It returns either `{:ok, body}` where body contains the parsed JSON data,
+  or `{:error, cause, message}`. The cause will be an atom describing the
+  error in more detail. The possible values are:
+  - `:http`: This caputures HTTP connection issues (e.g., timeouts):
+  - `:json`: The received data was malformed, or at least not of the expected
+    format.
+  - `:request`: ?
+  """
   @spec get(binary, map) :: {:ok, map} | {:error, atom, binary | map}
   def get(url, headers \\ %{}) do
     with {_, response}  <- RateLimiter.run(:get, url, "", headers),

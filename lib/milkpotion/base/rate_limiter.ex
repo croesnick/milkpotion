@@ -1,4 +1,6 @@
 defmodule Milkpotion.Base.RateLimiter do
+  @moduledoc false
+
   @rpi Application.get_env(:milkpotion, :max_requests_per_interval)
   @interval Application.get_env(:milkpotion, :rate_limit_interval)
   @max_tries Application.get_env(:milkpotion, :max_retries_if_over_rate)
