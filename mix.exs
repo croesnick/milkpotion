@@ -35,7 +35,7 @@ defmodule Milkpotion.Mixfile do
      {:ex_doc, "~> 0.11", only: :dev},
      {:dialyxir, "~> 0.3", only: :dev},
      {:poison, "~> 2.0"},
-     {:httpoison, "~> 0.8"},
+     {:httpoison, "~> 0.9"},
      {:ex_rated, "~> 1.2"},
      {:excoveralls, "~> 0.5", only: :test},
      {:bypass, "~> 0.1", only: :test}
